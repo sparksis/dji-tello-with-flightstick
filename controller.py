@@ -3,7 +3,7 @@ from __future__ import print_function
 from inputs import get_gamepad, KEYS_AND_BUTTONS
 import tello as tello_lib
 
-tello = tello_lib.Tello('', 8889)  
+tello = tello_lib.Tello('', 8889, command_timeout=0.03)  
 
 FLIGHT_SPEED_COEFFICIENT=0.2
 
@@ -41,10 +41,12 @@ def set_horizontal(axis, direction):
     update_rc()
 
 def set_speed(unused, velocity):
-    FLIGHT_SPEED_COEFFICIENT = round(velocity/255, 2)
+    FLIGHT_SPEED_COEFFICIENT = round((255.0 - velocity)/255, 2)
+    print("velocity %s" % velocity)
+    print("FLIGHT_SPEED_COEFFICIENT %s" % FLIGHT_SPEED_COEFFICIENT)
 
 def update_rc():
-    tello.send_command("rc {front_back:0} {left_right:0} {up_down:0} {yaw:0}".format(** flight_state) )
+    tello.send_command("rc {left_right:0} {front_back:0} {up_down:0} {yaw:0}".format(** flight_state) )
 
 def flip(axis, direction):
     if axis == "Y":
