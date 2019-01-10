@@ -5,11 +5,11 @@ import tello as tello_lib
 
 tello = tello_lib.Tello('', 8889, command_timeout=0.03)
 
-FLIGHT_SPEED_COEFFICIENT = 0.2
+tello.flightSpeedCoefficient = 0.2
 
 BTN_STATE_PRESSED = 1
 BTN_LAND = "BTN_NORTH"
-BTN_TAKE_OFF = "BTN_C"
+BTN_TAKE_OFF = "BTN_WEST"
 
 STICK_FLIP_Y = "ABS_HAT0Y"
 STICK_FLIP_X = "ABS_HAT0X"
@@ -32,25 +32,24 @@ def main():
                 stick_map[event.code](axis, event.state)
 
 
-def set_horizontal(axis, direction):
-    direction = 128-direction
-    direction = direction * -1
-    direction = direction*FLIGHT_SPEED_COEFFICIENT
-    direction = int(round(direction*100/128, 0))
+def set_velocity(axis, velocity):
+    velocity = 128-velocity
+    velocity = velocity * -1
+    velocity = int(round(velocity*100/128, 0))
     if axis == "X":
-        flight_state["left_right"] = direction
+        velocity = int(velocity * tello.flightSpeedCoefficient)
+        flight_state["left_right"] = velocity
     elif axis == "Y":
-        flight_state["front_back"] = direction
+        velocity = int(velocity * tello.flightSpeedCoefficient)
+        flight_state["front_back"] = velocity * -1
     elif axis == "Z":
-        flight_state["up_down"] = direction
+        flight_state["yaw"] = velocity
 
     update_rc()
 
 
-def set_speed(unused, velocity):
-    FLIGHT_SPEED_COEFFICIENT = round((255.0 - velocity)/255, 2)
-    print("velocity %s" % velocity)
-    print("FLIGHT_SPEED_COEFFICIENT %s" % FLIGHT_SPEED_COEFFICIENT)
+def set_flightSpeedCoefficient(unused, velocity):
+    tello.flightSpeedCoefficient = round((255.0 - velocity)/255, 2)
 
 
 def update_rc():
@@ -79,10 +78,10 @@ button_map = {
 stick_map = {
     STICK_FLIP_Y: flip,
     STICK_FLIP_X: flip,
-    STICK_FLY_X: set_horizontal,
-    STICK_FLY_Y: set_horizontal,
-    STICK_FLY_Z: set_horizontal,
-    STICK_SPEED: set_speed,
+    STICK_FLY_X: set_velocity,
+    STICK_FLY_Y: set_velocity,
+    STICK_FLY_Z: set_velocity,
+    STICK_SPEED: set_flightSpeedCoefficient,
 }
 
 flight_state = {"front_back": 0, "left_right": 0, "up_down": 0, "yaw": 0}
