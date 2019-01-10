@@ -3,9 +3,9 @@ from __future__ import print_function
 from inputs import get_gamepad, KEYS_AND_BUTTONS
 import tello as tello_lib
 
-tello = tello_lib.Tello('', 8889, command_timeout=0.03)  
+tello = tello_lib.Tello('', 8889, command_timeout=0.03)
 
-FLIGHT_SPEED_COEFFICIENT=0.2
+FLIGHT_SPEED_COEFFICIENT = 0.2
 
 BTN_STATE_PRESSED = 1
 BTN_LAND = "BTN_NORTH"
@@ -16,8 +16,10 @@ STICK_FLIP_X = "ABS_HAT0X"
 
 STICK_FLY_X = "ABS_X"
 STICK_FLY_Y = "ABS_Y"
+STICK_FLY_Z = "ABS_Z"
 
-STICK_SPEED="ABS_RZ"
+STICK_SPEED = "ABS_RZ"
+
 
 def main():
     while 1:
@@ -28,6 +30,8 @@ def main():
             if event.code in stick_map:
                 axis = event.code[-1:]
                 stick_map[event.code](axis, event.state)
+
+
 def set_horizontal(axis, direction):
     direction = 128-direction
     direction = direction * -1
@@ -37,20 +41,26 @@ def set_horizontal(axis, direction):
         flight_state["left_right"] = direction
     elif axis == "Y":
         flight_state["front_back"] = direction
-    
+    elif axis == "Z":
+        flight_state["up_down"] = direction
+
     update_rc()
+
 
 def set_speed(unused, velocity):
     FLIGHT_SPEED_COEFFICIENT = round((255.0 - velocity)/255, 2)
     print("velocity %s" % velocity)
     print("FLIGHT_SPEED_COEFFICIENT %s" % FLIGHT_SPEED_COEFFICIENT)
 
+
 def update_rc():
-    tello.send_command("rc {left_right:0} {front_back:0} {up_down:0} {yaw:0}".format(** flight_state) )
+    tello.send_command(
+        "rc {left_right:0} {front_back:0} {up_down:0} {yaw:0}".format(** flight_state))
+
 
 def flip(axis, direction):
     if axis == "Y":
-        if direction==-1:
+        if direction == -1:
             tello.flip("f")
         elif direction == 1:
             tello.flip("b")
@@ -60,9 +70,10 @@ def flip(axis, direction):
         elif direction == 1:
             tello.flip("r")
 
+
 button_map = {
     BTN_TAKE_OFF: tello.takeoff,
-    BTN_LAND: tello.land, 
+    BTN_LAND: tello.land,
 }
 
 stick_map = {
@@ -70,10 +81,11 @@ stick_map = {
     STICK_FLIP_X: flip,
     STICK_FLY_X: set_horizontal,
     STICK_FLY_Y: set_horizontal,
+    STICK_FLY_Z: set_horizontal,
     STICK_SPEED: set_speed,
 }
 
-flight_state = { "front_back":0, "left_right": 0, "up_down": 0, "yaw": 0 }
+flight_state = {"front_back": 0, "left_right": 0, "up_down": 0, "yaw": 0}
 
 if __name__ == "__main__":
     main()
