@@ -5,7 +5,7 @@ import tello as tello_lib
 
 tello = tello_lib.Tello('', 8889, command_timeout=0.03)
 
-tello.flightSpeedCoefficient = 0.2
+tello.flightSpeedCoefficient = 0.5
 
 BTN_STATE_PRESSED = 1
 BTN_LAND = "BTN_NORTH"
@@ -48,8 +48,11 @@ def set_velocity(axis, velocity):
     update_rc()
 
 
-def set_flightSpeedCoefficient(unused, velocity):
-    tello.flightSpeedCoefficient = round((255.0 - velocity)/255, 2)
+def set_lift(unused, velocity):
+    velocity = 128-velocity
+    velocity = int(round(velocity*100/128, 0))
+    flight_state["up_down"] = int(velocity * tello.flightSpeedCoefficient)
+    update_rc()
 
 
 def update_rc():
@@ -81,7 +84,7 @@ stick_map = {
     STICK_FLY_X: set_velocity,
     STICK_FLY_Y: set_velocity,
     STICK_FLY_Z: set_velocity,
-    STICK_SPEED: set_flightSpeedCoefficient,
+    STICK_SPEED: set_lift,
 }
 
 flight_state = {"front_back": 0, "left_right": 0, "up_down": 0, "yaw": 0}
